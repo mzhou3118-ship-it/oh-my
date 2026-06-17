@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>丹青长青录 V6.5 - 墨韵张力平衡版</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --bg-paper: #EFECE4;        /* 更有历史沉淀的古法宣纸色 */
+            --ink-black: #1A1A1A;      
+            --text-color: #2A2A2A;
+            --primary-seal: #B22D1D;    /* 更有张力的印泥朱砂红 */
+            --silk-border: #C8B89F;     /* 丝绸绫边色 */
+            --wood-axis: #3E342B;       /* 轴头木色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: "SF Pro SC", "HanHei SC", "PingFang SC", "STKaiti", sans-serif;
+            background-color: var(--bg-paper);
+            /* 细密绢丝纹理底噪 */
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.015) 1px, transparent 0),
+                linear-gradient(to right, rgba(0,0,0,0.005) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.005) 1px, transparent 1px);
+            background-size: 8px 8px, 20px 20px, 20px 20px;
+            color: var(--text-color);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- 传统题款风格侧边栏（张力担当） --- */
+        .inscription-bar {
+            position: absolute;
+            left: 4vw;
+            top: 6vh;
+            bottom: 6vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            width: 60px;
+        }
+
+        .title-board {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 30px 12px;
+            border-radius: 4px;
+            box-shadow: 5px 15px 35px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            writing-mode: vertical-rl; /* 传统纵向书写 */
+            letter-spacing: 4px;
+        }
+
+        #artTitle {
+            font-size: 22px;
+            font-weight: 700;
+            font-family: "STKaiti", "Kaiti", serif;
+            color: var(--ink-black);
+        }
+
+        /* 状态提示：悬浮在顶部中央的极简绢行 */
+        .status-marquee {
+            position: absolute;
+            top: 4vh;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            padding: 8px 32px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            z-index: 100;
+            border: 1px solid rgba(0,0,0,0.03);
+            letter-spacing: 1px;
+        }
+
+        /* 朱砂方印按钮组 */
+        .seal-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .seal-btn {
+            background-color: var(--primary-seal); 
+            color: #FFF;
+            border: none;
+            outline: 2px double rgba(255,255,255,0.8);
+            outline-offset: -4px;
+            box-shadow: 3px 8px 20px rgba(178,45,29,0.3);
+            width: 48px;
+            height: 48px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: "STKaiti", "Kaiti", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .seal-btn:active, .seal-btn.focused {
+            transform: scale(0.9) rotate(-3deg);
+            box-shadow: 1px 3px 8px rgba(178,45,29,0.5);
+            background-color: #912014;
+        }
+
+        /* --- 画卷主框架（平衡之美） --- */
+        .stage {
+            position: relative;
+            width: 75vw;
+            height: 65vh;
+            max-width: 1000px;
+            max-height: 650px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* 模拟高档装裱长卷：左右带木质地轴与加宽绫边 */
+        .scroll-frame {
+            width: 100%;
+            height: 100%;
+            background: #FAFAFA;
+            border-left: 32px solid var(--silk-border); 
+            border-right: 32px solid var(--silk-border);
+            box-shadow: 
+                0 40px 90px rgba(0,0,0,0.1), 
+                inset 0 0 40px rgba(0,0,0,0.01);
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        /* 模拟长卷边缘的上下微阴影，使其更具厚度感 */
+        .scroll-frame::before, .scroll-frame::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; height: 6px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .scroll-frame::before { top: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.03), transparent); }
+        .scroll-frame::after { bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.03), transparent); }
+
+        .art-svg-layer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            padding: 45px 60px;
+        }
+
+        .art-svg-layer svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .paint-block {
+            fill: #FFFFFF;
+            fill-opacity: 0.03;
+            stroke: #2C2C2C;
+            stroke-width: 1.0;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            cursor: pointer;
+            transition: fill 1.2s cubic-bezier(0.1, 0.8, 0.2, 1), fill-opacity 0.8s;
+        }
+
+        .paint-block.art-bg { stroke: none; }
+
+        /* 绝美的金丝白描悬停高亮暗示 */
+        .paint-block.focused {
+            fill: #E8E2D0;
+            fill-opacity: 0.35;
+            stroke: var(--primary-seal);
+            stroke-width: 1.2;
+        }
+
+        /* --- 砚台意象调色盘UI --- */
+        .palette-container {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            background: rgba(28, 28, 28, 0.92); /* 墨砚黑底座 */
+            backdrop-filter: blur(25px);
+            padding: 14px 36px;
+            border-radius: 60px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            z-index: 110;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .page-trigger {
+            background: rgba(255, 255, 255, 0.08);
+            color: #EFECE4;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .page-trigger.focused, .page-trigger:hover {
+            background: #FFF;
+            color: var(--ink-black);
+            transform: scale(1.05);
+        }
+
+        .color-list {
+            display: flex;
+            gap: 24px;
+        }
+
+        .color-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 4px;
+            border-radius: 40px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .color-well {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            color: #FFF;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+        }
+
+        .color-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: #BBB;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        /* 选中态：如墨入水，卡片向上浮起，文字变亮 */
+        .color-card.active .color-well {
+            transform: translateY(-8px) scale(1.1);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 8px 20px rgba(255,255,255,0.15);
+        }
+        .color-card.active .color-name {
+            color: #FFF;
+            font-weight: bold;
+        }
+
+        /* --- 镜像监控窗（极致轻量隐藏感） --- */
+        .mirror-window {
+            position: absolute;
+            top: 4vh;
+            right: 4vw;
+            width: 140px;
+            height: 105px;
+            border-radius: 8px; 
+            border: 1px solid rgba(0,0,0,0.06);
+            overflow: hidden;
+            transform: scaleX(-1);
+            background: #111;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        #webcam {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.25; /* 降低存在感，融入背景 */
+            filter: grayscale(100%) contrast(120%); /* 纯黑白处理，更具禅意 */
+        }
+
+        #skeletonCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
+
+        #rippleCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 95;
+        }
+
+        /* --- 虚拟悬停光标 --- */
+        .virtual-cursor-container {
+            position: absolute;
+            pointer-events: none;
+            z-index: 200;
+            transform: translate(-50%, -50%);
+            display: none;
+            width: 54px;
+            height: 54px;
+        }
+        
+        .virtual-cursor-dot {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            background: var(--primary-seal);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 12px var(--primary-seal);
+        }
+
+        .virtual-cursor-ring { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="status-marquee" id="statusTips">正在绢写画卷，备墨开机...</div>
+
+    <div class="inscription-bar">
+        <div class="title-board">
+            <span id="artTitle">墨荷听雨</span>
+        </div>
+        <div class="seal-group">
+            <button class="seal-btn paint-block" id="btnPrevArt" onclick="switchArtwork(-1)">卷首</button>
+            <button class="seal-btn paint-block" id="btnNextArt" onclick="switchArtwork(1)">卷尾</button>
+        </div>
+    </div>
+
+    <div class="virtual-cursor-container" id="vCursor">
+        <svg class="virtual-cursor-ring" viewBox="0 0 36 36">
+            <path id="cursorProgress" stroke-linecap="round" stroke="rgba(178,45,29,0.9)" stroke-width="2.5" fill="none"
+                  stroke-dasharray="0, 100"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="virtual-cursor-dot"></div>
+    </div>
+
+    <div class="stage">
+        <div class="scroll-frame">
+            <div class="art-svg-layer" id="artLayer"></div>
+        </div>
+    </div>
+
+    <div class="palette-container">
+        <div class="page-trigger paint-block" id="btnPrevPage">翻砚</div>
+        <div class="color-list" id="dynamicColors"></div>
+        <div class="page-trigger paint-block" id="btnNextPage">翻砚</div>
+        <button class="page-trigger paint-block" style="background:#B22D1D; color:white; margin-left:8px;" id="btnResetArt" onclick="resetCurrentArt()">洗画</button>
+    </div>
+
+    <div class="mirror-window">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="skeletonCanvas"></canvas>
+    </div>
+
+    <canvas id="rippleCanvas"></canvas>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol) {
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+        const AudioFX = {
+            move: () => playSound(240, 'sine', 0.12, 0.02),
+            lock: () => playSound(600, 'sine', 0.18, 0.08), 
+            paint: () => playSound(110, 'triangle', 0.7, 0.22),
+            page: () => playSound(380, 'sine', 0.25, 0.12) 
+        };
+    </script>
+
+    <script>
+        const ArtLibrary = [
+            { title: "墨荷听雨", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M50,65 C43,45 25,40 32,25 C40,10 50,5 50,5 C50,5 60,10 68,25 C75,40 57,45 50,65 Z" /><path class="paint-block" d="M50,65 C32,55 15,45 15,28 C15,12 32,12 32,25" /><path class="paint-block" d="M50,65 C68,55 85,45 85,28 C85,12 68,12 68,25" /><path class="paint-block" d="M32,25 C15,25 2,35 5,52 C8,70 30,72 50,65 C38,60 28,45 32,25 Z" /><path class="paint-block" d="M68,25 C85,25 98,35 95,52 C92,70 70,72 50,65 C62,60 72,45 68,25 Z" /><path d="M50,65 L50,100 M47,72 L47,95 M53,75 L53,98" stroke="#333" stroke-width="0.6" stroke-dasharray="1,1" /></svg>` },
+            { title: "独钓寒江", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M0,45 Q25,20 50,40 T100,35 L100,55 L0,55 Z" /><path class="paint-block" d="M25,75 C35,75 40,73 70,73 C75,73 80,77 75,80 C50,83 30,83 20,80 C15,77 20,75 25,75 Z" /><path class="paint-block" d="M45,73 C45,65 50,60 55,60 C60,60 60,65 60,73 Z" /><path class="paint-block" d="M50,60 L56,54 L62,60 Z" /><path d="M5,88 Q25,86 50,88 T95,88" stroke="#333" stroke-width="0.5" /></svg>` },
+            { title: "松鹤延年", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M10,100 C15,70 10,40 30,30 C35,27 45,35 40,45 C30,45 25,65 25,100 Z" /><path class="paint-block" d="M30,30 C20,15 5,20 5,35 C5,50 20,45 30,30 Z" /><path class="paint-block" d="M40,35 C45,15 65,10 70,25 C75,40 55,45 40,35 Z" /><path class="paint-block" d="M65,65 C60,50 70,40 80,45 C90,50 90,65 80,70 C72,72 68,70 65,65 Z" /><path class="paint-block" d="M65,65 C63,55 65,45 70,35 C72,35 73,40 68,52 Z" /></svg>` },
+            { title: "红梅傲雪", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M10,90 Q30,80 40,55 T70,30 Q80,25 90,10 L88,8 Q78,23 68,28 T38,53 Q28,76 8,86 Z" /><path class="paint-block" d="M35,50 C30,45 30,35 40,40 C50,35 50,45 45,50 C50,55 40,60 35,50 Z" /><path class="paint-block" d="M65,30 C60,20 70,15 75,22 C85,18 85,28 78,32 C82,40 72,40 65,30 Z" /><path class="paint-block" d="M0,65 L20,50 L45,60 L75,40 L100,55 L100,100 L0,100 Z" /></svg>` },
+            { title: "翠竹清风", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M20,100 L23,70 L28,70 L25,100 Z" /><path class="paint-block" d="M23,68 L25,35 L30,35 L28,68 Z" /><path class="paint-block" d="M25,33 L27,5 L32,5 L30,33 Z" /><path class="paint-block" d="M28,35 Q45,30 55,40 Q40,45 28,35 Z" /><path class="paint-block" d="M28,35 Q50,45 58,60 Q42,52 28,35 Z" /><path class="paint-block" d="M60,100 L62,75 L66,75 L64,100 Z" /><path class="paint-block" d="M62,73 L64,45 L68,45 L66,73 Z" /><path class="paint-block" d="M64,45 Q80,35 90,42 Q75,50 64,45 Z" /><path class="paint-block" d="M64,45 Q50,35 40,40 Q52,48 64,45 Z" /></svg>` },
+            { title: "秋山观瀑", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M0,10 L25,35 L15,60 L35,80 L0,90 Z" /><path class="paint-block" d="M100,20 L75,45 L85,70 L60,95 L100,100 Z" /><path class="paint-block" d="M42,30 Q47,55 45,80 L55,80 Q53,55 48,30 Z" /><path class="paint-block" d="M0,90 Q50,75 100,95 L100,100 L0,100 Z" /><path class="paint-block" d="M30,30 L50,15 L70,35 L60,40 L45,35 Z" /></svg>` },
+            { title: "孤村落日", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M40,40 A15,15 0 1,1 70,40 A15,15 0 1,1 40,40 Z" /><path class="paint-block" d="M0,50 Q25,35 50,48 T100,45 L100,65 L0,65 Z" /><path class="paint-block" d="M20,65 L35,53 L50,65 Z" /><path class="paint-block" d="M23,65 L23,85 L47,85 L47,65 Z" /><path class="paint-block" d="M31,73 L31,85 L39,85 L39,73 Z" /><path class="paint-block" d="M0,85 Q40,80 100,90 L100,100 L0,100 Z" /></svg>` },
+            { title: "春江水暖", svg: `<svg viewBox="0 0 100 100"><rect class="paint-block art-bg" x="0" y="0" width="100" height="100" /><path class="paint-block" d="M0,0 Q30,5 40,25 Q25,18 0,0 Z" /><path class="paint-block" d="M40,25 Q50,50 48,75 Q43,50 40,25 Z" /><path class="paint-block" d="M30,15 Q20,45 15,65 Q18,40 30,15 Z" /><path class="paint-block" d="M45,65 C40,65 35,55 45,50 C55,45 70,48 75,60 C70,68 55,68 45,65 Z" /><path class="paint-block" d="M68,52 C68,45 75,42 78,47 C82,45 85,48 80,52 C76,56 70,55 68,52 Z" /><path class="paint-block" d="M20,75 Q50,70 90,78 L88,80 Q50,72 22,77 Z" /><path class="paint-block" d="M10,85 Q45,82 80,88 L78,90 Q45,84 12,87 Z" /></svg>` }
+        ];
+
+        const ColorLibrary = [
+            [
+                { name: "朱砂", value: "#C94A29" },
+                { name: "花青", value: "#2F5C8F" },
+                { name: "汁绿", value: "#5C7A29" },
+                { name: "藤黄", value: "#DFB722" }
+            ],
+            [
+                { name: "胭脂", value: "#9E2A2B" },
+                { name: "赭石", value: "#8C5333" },
+                { name: "黛蓝", value: "#4A5759" },
+                { name: "钛白", value: "#EAE6D8" }
+            ],
+            [
+                { name: "雌黄", value: "#E9C46A" },
+                { name: "石绿", value: "#2A9D8F" },
+                { name: "花翠", value: "#264653" },
+                { name: "烟墨", value: "#2B2A33" }
+            ]
+        ];
+
+        let artIndex = 0;
+        let currentPalettePage = 0; 
+        let selectedColor = ColorLibrary[0][0].value; 
+
+        let targetX = 0, targetY = 0;
+        let pointerX = 0, pointerY = 0;
+        const INTERTIA_FACTOR = 0.16; /* 稍微加强一点平滑过滤，使轨迹更有书法运笔感 */
+        let isHandActive = false;
+
+        function updatePointerLoop() {
+            if (isHandActive) {
+                pointerX += (targetX - pointerX) * INTERTIA_FACTOR;
+                pointerY += (targetY - pointerY) * INTERTIA_FACTOR;
+
+                const vCursor = document.getElementById('vCursor');
+                vCursor.style.left = `${pointerX}px`;
+                vCursor.style.top = `${pointerY}px`;
+                
+                checkHoverLogic(pointerX, pointerY);
+            }
+            requestAnimationFrame(updatePointerLoop);
+        }
+        requestAnimationFrame(updatePointerLoop);
+
+        function renderPalette() {
+            const container = document.getElementById('dynamicColors');
+            container.innerHTML = '';
+            const currentSet = ColorLibrary[currentPalettePage];
+
+            currentSet.forEach((color, idx) => {
+                const isActive = (selectedColor === color.value) ? 'active' : '';
+                container.innerHTML += `
+                    <div class="color-card ${isActive}" onclick="clickToSelectColor(${idx})">
+                        <div class="color-well" style="background: ${color.value};">${idx + 1}</div>
+                        <div class="color-name">${color.name}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function clickToSelectColor(idx) {
+            selectedColor = ColorLibrary[currentPalettePage][idx].value;
+            renderPalette();
+            AudioFX.lock();
+        }
+
+        function switchPalettePage(dir) {
+            currentPalettePage = (currentPalettePage + dir + ColorLibrary.length) % ColorLibrary.length;
+            selectedColor = ColorLibrary[currentPalettePage][0].value;
+            renderPalette();
+            AudioFX.page();
+        }
+
+        function loadArtwork(index) {
+            const layer = document.getElementById('artLayer');
+            layer.innerHTML = ArtLibrary[index].svg;
+            document.getElementById('artTitle').innerText = ArtLibrary[index].title;
+            
+            document.querySelectorAll('#artLayer .paint-block').forEach(block => {
+                block.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    executePaintEffect(block, e.clientX, e.clientY);
+                });
+            });
+        }
+
+        function executePaintEffect(element, x, y) {
+            element.style.fill = selectedColor;
+            element.style.fillOpacity = "0.88";
+            createInkRipple(x, y, selectedColor);
+            AudioFX.paint();
+        }
+
+        function switchArtwork(dir) {
+            artIndex = (artIndex + dir + ArtLibrary.length) % ArtLibrary.length;
+            loadArtwork(artIndex);
+            AudioFX.page();
+        }
+
+        function resetCurrentArt() {
+            document.querySelectorAll('#artLayer .paint-block').forEach(b => {
+                b.style.fill = '#FFFFFF'; b.style.fillOpacity = '0.03';
+            });
+            AudioFX.page();
+        }
+
+        document.getElementById('btnPrevPage').addEventListener('click', () => switchPalettePage(-1));
+        document.getElementById('btnNextPage').addEventListener('click', () => switchPalettePage(1));
+    </script>
+
+    <script>
+        let hoverStartTime = null;
+        let lastFocusedElement = null;
+        const hoverTriggerDuration = 1400; 
+
+        function checkHoverLogic(x, y) {
+            const el = document.elementFromPoint(x, y);
+            const validBlock = el && el.classList.contains('paint-block') ? el : null;
+
+            if (validBlock) {
+                if (lastFocusedElement !== validBlock) {
+                    resetHoverState();
+                    lastFocusedElement = validBlock;
+                    lastFocusedElement.classList.add('focused');
+                    hoverStartTime = Date.now();
+                    AudioFX.move();
+                } else {
+                    const elapsed = Date.now() - hoverStartTime;
+                    const progress = Math.min((elapsed / hoverTriggerDuration) * 100, 100);
+                    document.getElementById('cursorProgress').setAttribute('stroke-dasharray', `${progress}, 100`);
+
+                    updateStatusText(lastFocusedElement);
+
+                    if (elapsed >= hoverTriggerDuration) {
+                        triggerHoverAction(lastFocusedElement, x, y);
+                        resetHoverState();
+                    }
+                }
+            } else {
+                resetHoverState();
+            }
+        }
+
+        function resetHoverState() {
+            if (lastFocusedElement) {
+                lastFocusedElement.classList.remove('focused');
+            }
+            lastFocusedElement = null;
+            hoverStartTime = null;
+            document.getElementById('cursorProgress').setAttribute('stroke-dasharray', `0, 100`);
+        }
+
+        function updateStatusText(element) {
+            const tips = document.getElementById('statusTips');
+            if(element.id === 'btnPrevPage' || element.id === 'btnNextPage') {
+                tips.innerText = "✋ 凝神悬停：推动气韵翻转墨砚";
+            } else if(element.id === 'btnPrevArt' || element.id === 'btnNextArt') {
+                tips.innerText = "✋ 凝神悬停：舒展徐下，切换画轴";
+            } else if(element.id === 'btnResetArt') {
+                tips.innerText = "✋ 凝神悬停：清泉洗画，复归太初";
+            } else {
+                const isBg = element.classList.contains('art-bg');
+                tips.innerText = isBg ? "✋ 满掌抚于绢面：意欲浸润宣纸底色" : "✋ 凝神止于工笔：毫端引墨，准备着色";
+            }
+        }
+
+        function triggerHoverAction(element, x, y) {
+            if (element.id === 'btnPrevPage') switchPalettePage(-1);
+            else if (element.id === 'btnNextPage') switchPalettePage(1);
+            else if (element.id === 'btnPrevArt') switchArtwork(-1);
+            else if (element.id === 'btnNextArt') switchArtwork(1);
+            else if (element.id === 'btnResetArt') resetCurrentArt();
+            else {
+                executePaintEffect(element, x, y);
+                document.getElementById('statusTips').innerText = "✨ 妙手落墨，万象生辉。";
+            }
+        }
+
+        const videoElement = document.getElementById('webcam');
+        const sCanvas = document.getElementById('skeletonCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        const vCursor = document.getElementById('vCursor');
+
+        function isFingerExtended(tipIdx, pipIdx, landmarks) {
+            return landmarks[tipIdx].y < landmarks[pipIdx].y - 0.03;
+        }
+
+        function onResults(results) {
+            if (sCanvas.width !== videoElement.videoWidth) {
+                sCanvas.width = videoElement.videoWidth;
+                sCanvas.height = videoElement.videoHeight;
+            }
+            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+
+                /* 骨架节点映射为更具东方韵味的竹青色节点 */
+                for (let i = 0; i < landmarks.length; i++) {
+                    sCtx.beginPath();
+                    sCtx.fillStyle = i === 9 ? '#B22D1D' : '#3A473D';
+                    sCtx.arc(landmarks[i].x * sCanvas.width, landmarks[i].y * sCanvas.height, i===9?4:2, 0, 2*Math.PI);
+                    sCtx.fill();
+                }
+
+                let extendedFingers = 0;
+                if (isFingerExtended(8, 6, landmarks))  extendedFingers++; 
+                if (isFingerExtended(12, 10, landmarks)) extendedFingers++; 
+                if (isFingerExtended(16, 14, landmarks)) extendedFingers++; 
+                if (isFingerExtended(20, 18, landmarks)) extendedFingers++; 
+
+                const palm = landmarks[9];
+                targetX = (1 - palm.x) * window.innerWidth;
+                targetY = palm.y * window.innerHeight;
+
+                if (!isHandActive) {
+                    pointerX = targetX; pointerY = targetY;
+                    isHandActive = true;
+                    vCursor.style.display = 'block';
+                }
+
+                if (extendedFingers >= 1 && extendedFingers <= 4) {
+                    resetHoverState();
+                    const pageColors = ColorLibrary[currentPalettePage];
+                    const targetColor = pageColors[extendedFingers - 1].value;
+                    
+                    if (selectedColor !== targetColor) {
+                        selectedColor = targetColor;
+                        renderPalette();
+                        AudioFX.lock();
+                    }
+                    document.getElementById('statusTips').innerText = `隔空飞指：张开 ${extendedFingers} 指 调墨「${pageColors[extendedFingers-1].name}」`;
+                }
+            } else {
+                if (isHandActive) {
+                    isHandActive = false;
+                    vCursor.style.display = 'none';
+                    resetHoverState();
+                }
+            }
+        }
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.65
+        });
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({ image: videoElement }); },
+            width: 320,
+            height: 240
+        });
+        camera.start().then(() => {
+            document.getElementById('statusTips').innerText = "画卷已展。伸出1~4指变色，满掌移动，悬停以落墨填色。";
+        });
+
+        renderPalette();
+        loadArtwork(artIndex);
+    </script>
+
+    <script>
+        const rCanvas = document.getElementById('rippleCanvas');
+        const rCtx = rCanvas.getContext('2d');
+        let ripples = [];
+
+        function resizeRippleCanvas() {
+            rCanvas.width = window.innerWidth; rCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeRippleCanvas);
+        resizeRippleCanvas();
+
+        function createInkRipple(x, y, color) {
+            for(let i=0; i<35; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 2.5;
+                ripples.push({
+                    x: x,
+                    y: y,
+                    r: Math.random() * 5 + 2,
+                    maxR: 60 + Math.random() * 50,
+                    color: color,
+                    alpha: 0.6,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    friction: 0.95 
+                });
+            }
+        }
+
+        function drawRipples() {
+            rCtx.clearRect(0,0,rCanvas.width,rCanvas.height);
+            rCtx.globalCompositeOperation = 'multiply';
+
+            for(let i=ripples.length-1; i>=0; i--) {
+                let rp = ripples[i];
+                rp.vx *= rp.friction;
+                rp.vy *= rp.friction;
+                rp.x += rp.vx; 
+                rp.y += rp.vy; 
+                rp.r += 0.55; 
+                rp.alpha -= 0.007; 
+
+                if(rp.alpha <= 0 || rp.r >= rp.maxR) {
+                    ripples.splice(i,1); 
+                    continue;
+                }
+
+                rCtx.beginPath(); 
+                rCtx.globalAlpha = rp.alpha; 
+                rCtx.fillStyle = rp.color;
+                
+                /* 渲染更柔和的渗开水墨毛边质感 */
+                rCtx.arc(rp.x, rp.y, rp.r, 0, Math.PI*2); 
+                rCtx.fill();
+            }
+            requestAnimationFrame(drawRipples);
+        }
+        drawRipples();
+    </script>
+</body>
+</html>
