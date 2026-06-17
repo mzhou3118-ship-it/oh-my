@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>丹青长青录 V6.5 - 墨韵张力平衡版</title>
+    <title>宣和丹青录 V6.5 - 墨韵张力平衡版</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
@@ -644,6 +644,7 @@
                     pointerX = targetX; pointerY = targetY;
                     isHandActive = true;
                     vCursor.style.display = 'block';
+                    resetHoverState();
                 }
 
                 if (extendedFingers >= 1 && extendedFingers <= 4) {
@@ -684,7 +685,7 @@
             height: 240
         });
         camera.start().then(() => {
-            document.getElementById('statusTips').innerText = "画卷已展。伸出1~4指变色，满掌移动，悬停以落墨填色。";
+            document.getElementById('statusTips').innerText = "宣和画卷已展。伸出1~4指变色，满掌移动，悬停以落墨填色。";
         });
 
         renderPalette();

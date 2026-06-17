@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《宣和丹青录》隔空水墨填色——全长卷游玩全攻略</title>
+    <style>
+        :root {
+            --bg-paper: #F4F1EA;        /* 宣和御用澄心堂纸色 */
+            --ink-black: #1C1C1C;      /* 徽墨沉黑色 */
+            --text-color: #2B2B2B;
+            --primary-seal: #A62419;    /* 宫廷朱砂印泥红 */
+            --silk-border: #D2C2A8;     /* 宫裱淡金绢丝色 */
+            --shadow-ink: rgba(28, 28, 28, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "SF Pro SC", "HanHei SC", "PingFang SC", "STKaiti", serif;
+            background-color: var(--bg-paper);
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.015) 1px, transparent 0),
+                linear-gradient(to right, rgba(0,0,0,0.003) 1px, transparent 1px);
+            background-size: 10px 10px;
+            color: var(--text-color);
+            line-height: 1.8;
+            padding: 50px 20px;
+        }
+
+        .scroll-wrapper {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #FCFAF6;
+            border-left: 24px solid var(--silk-border);
+            border-right: 24px solid var(--silk-border);
+            box-shadow: 0 35px 80px rgba(0,0,0,0.07);
+            padding: 60px 70px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .imperial-seal {
+            display: inline-block;
+            background: var(--primary-seal);
+            color: #FFF;
+            font-family: "STKaiti", "Kaiti", serif;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 12px 30px;
+            outline: 3px double rgba(255,255,255,0.85);
+            outline-offset: -6px;
+            border-radius: 2px;
+            box-shadow: 4px 6px 20px rgba(166,36,25,0.25);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            font-size: 16px;
+            color: #555;
+            letter-spacing: 4px;
+            font-family: "STKaiti", "Kaiti", serif;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px dashed var(--silk-border);
+            margin: 40px 0;
+        }
+
+        h2 {
+            font-family: "STKaiti", "Kaiti", serif;
+            color: var(--ink-black);
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--silk-border);
+            padding-bottom: 6px;
+            display: inline-block;
+        }
+
+        p {
+            margin-bottom: 18px;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        .device-advice {
+            background: rgba(166,36,25,0.03);
+            border-left: 5px solid var(--primary-seal);
+            padding: 25px;
+            border-radius: 0 6px 6px 0;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px var(--shadow-ink);
+        }
+
+        .device-advice h3 {
+            color: var(--primary-seal);
+            font-size: 19px;
+            margin-bottom: 12px;
+            font-family: "STKaiti", "Kaiti", serif;
+        }
+
+        .device-advice ul {
+            list-style-type: disc;
+            padding-left: 22px;
+            font-size: 15px;
+        }
+
+        .device-advice li {
+            margin-bottom: 8px;
+        }
+
+        .gesture-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: #FFF;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.015);
+        }
+
+        .gesture-table th, .gesture-table td {
+            border: 1px solid #EAE6DC;
+            padding: 14px 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .gesture-table th {
+            background-color: #F1ECE0;
+            color: var(--ink-black);
+            font-weight: 600;
+            font-family: "STKaiti", "Kaiti", serif;
+            font-size: 16px;
+        }
+
+        .gesture-table tr:nth-child(even) {
+            background-color: #FAF8F4;
+        }
+
+        .ink-badge {
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #FFF;
+            font-size: 13px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .guide-steps {
+            margin: 25px 0;
+            padding-left: 20px;
+        }
+
+        .guide-steps li {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .guide-steps strong {
+            color: var(--ink-black);
+        }
+
+        .highlight-text {
+            color: var(--primary-seal);
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            font-size: 14px;
+            color: #888;
+            font-family: "STKaiti", "Kaiti", serif;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scroll-wrapper">
+        <header>
+            <div class="imperial-seal">宣和丹青录</div>
+            <p>—— 隔空水墨设色交互大屏游玩指南 ——</p>
+        </header>
+
+        <p>《宣和丹青录》是一款依托于 <strong>MediaPipe 人工智能手势识别技术</strong> 与 <strong>中国传统水墨画美学</strong> 的前沿网页交互艺术游戏。在此作中，你无需任何实体鼠标、键盘或触控设备。只需在镜头前舒展手掌、变换指尖，即可隔空调用朱砂、花青、黛蓝等宣和御用颜料，在绢丝长卷上挥毫落墨，体验“妙手生万象”的禅意张力。</p>
+
+        <div class="device-advice">
+            <h3>依凭大屏·台前备墨（为什么强烈建议使用电脑设备游玩？）</h3>
+            <ul>
+                <li><strong>长卷气韵，非大屏不可展：</strong> 游戏高度还原了古代装裱手卷的艺术比例。电脑宽屏显示器能让画面两侧的“题款”与“地轴”完美舒展，留白与气韵一览无遗。</li>
+                <li><strong>稳固视界，利于 AI 追踪：</strong> 电脑（特别是笔记本电脑或固定的桌面网络摄像头）拥有绝对稳定的捕捉视角。相比容易晃动的手机镜头，电脑能为手势骨骼识别提供极为稳定的算法环境。</li>
+                <li><strong>权限准入：</strong> 首次通过电脑浏览器打开网页时，请在顶部弹出的提示中点击 <span class="highlight-text">“允许使用您的摄像头”</span>。</li>
+                <li><strong>布光秘诀：</strong> 请保证手部区域光线柔和充足。避免电脑背后面临强光（如窗户朝阳），否则手部剪影会干扰 AI 对指尖骨骼的判断。</li>
+            </ul>
+        </div>
+
+        <h2>一、 核心手势：隔空控墨</h2>
+        <p>请端坐在电脑前，与摄像头保持 <strong>50 厘米至 1 米</strong> 的距离。抬起单手，掌心面向镜头。当看到右上角黑白禅意监控窗内，你的手部被赋予了“竹青色”的骨骼连线，即代表气韵已通：</p>
+        
+        <ul class="guide-steps">
+            <li><strong>☝ 移砚（运笔光标）：</strong> 保持五指自然张开，在空中轻缓移动。此时，画面中会浮现一枚朱砂红色的<strong>“虚拟悬停光标”</strong>随你而动。系统特意融入了<span class="highlight-text">书法运笔惯性过滤</span>，光标移动时会带有毛笔划过宣纸的绵韧阻尼感，切忌过快挥动。</li>
+            <li><strong>☝ 凝神（落墨填色）：</strong> 将红色光标精准移至想要填色的白描区域或功能按钮上，<strong>让手掌在空中静止悬停</strong>。此时光标外圈的圆环进度条会开始蓄力运转，保持 <strong>1.4 秒</strong> 纹丝不动后，水墨特效轰然炸开，即完成落墨或点击。</li>
+        </ul>
+
+        <h2>二、 隔空飞指：三砚调色盘</h2>
+        <p>画卷下方设有一座“墨砚调色盘”，内置三页不同风格的传统国画色彩。当你需要更换笔墨颜色时，无需移动光标，只需在空中<span class="highlight-text">张开特定数量的手指</span>，即可瞬间切换当下的落墨色彩：</p>
+
+        <table class="gesture-table">
+            <thead>
+                <tr>
+                    <th>手势状态</th>
+                    <th>第一砚 (初展)</th>
+                    <th>第二砚 (一翻)</th>
+                    <th>第三砚 (再翻)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>☝ 仅伸出 1 根手指</strong></td>
+                    <td><span class="highlight-badge" style="background: #C94A29;">朱砂 (朱红)</span></td>
+                    <td><span class="highlight-badge" style="background: #9E2A2B;">胭脂 (暗红)</span></td>
+                    <td><span class="highlight-badge" style="background: #E9C46A;">雌黄 (明黄)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>✌ 仅伸出 2 根手指</strong></td>
+                    <td><span class="highlight-badge" style="background: #2F5C8F;">花青 (深蓝)</span></td>
+                    <td><span class="highlight-badge" style="background: #8C5333;">赭石 (棕褐)</span></td>
+                    <td><span class="highlight-badge" style="background: #2A9D8F;">石绿 (青绿)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>🤟 仅伸出 3 根手指</strong></td>
+                    <td><span class="highlight-badge" style="background: #5C7A29;">汁绿 (草绿)</span></td>
+                    <td><span class="highlight-badge" style="background: #4A5759;">黛蓝 (青灰)</span></td>
+                    <td><span class="highlight-badge" style="background: #264653;">花翠 (墨绿)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>✋ 仅伸出 4 根手指</strong></td>
+                    <td><span class="highlight-badge" style="background: #DFB722; color: #2A2A2A; text-shadow: none;">藤黄 (鹅黄)</span></td>
+                    <td><span class="highlight-badge" style="background: #EAE6D8; color: #2A2A2A; text-shadow: none;">钛白 (宣白)</span></td>
+                    <td><span class="highlight-badge" style="background: #2B2A33;">烟墨 (纯墨)</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>三、 长卷传统交互功能</h2>
+        <p>利用红色的悬停光标，你可以在电脑大屏上完全脱离键盘与鼠标，优雅地掌控长卷的互动：</p>
+        <ul class="guide-steps">
+            <li><strong>【卷首】与【卷尾】：</strong> 位于长卷左侧的题款区域。将光标悬停其上蓄力，即可在 <em>墨荷听雨、独钓寒江、松鹤延年、红梅傲雪、翠竹清风</em> 等八幅皇家传世白描长卷中循环展阅。</li>
+            <li><strong>【翻砚】：</strong> 位于底部墨砚底座的两侧。悬停其上，即可循环翻转调色盘，切换上述表格中的不同页签颜料。</li>
+            <li><strong>【洗画】：</strong> 位于底盘右侧的朱砂方印。若对当前画卷的设色不满意，悬停于此，清泉流过，整幅作品的色彩会瞬间褪去，“复归太初”重新开始。</li>
+        </ul>
+
+        <div class="device-advice" style="background: rgba(0,0,0,0.015); border-left-color: var(--silk-border);">
+            <h3>✨ 艺术张力反馈提示</h3>
+            <p style="font-size: 14px; margin-bottom: 0; color: #555;">当你在工笔白描区域悬停落墨成功时，电脑大屏上会爆发出极其细腻的<strong>水墨晕染粒子效果</strong>（Ink Ripple），色彩如同墨汁在宣纸上丝丝渗开，并伴随浑厚低沉的古琴震音。请尽情享受这长卷背后的静谧与视觉张力。</p>
+        </div>
+
+        <hr>
+
+        <footer>
+            展宣和御轴，备古法浓墨。祝您在电脑大屏前妙手落墨，万象生辉。
+        </footer>
+    </div>
+
+</body>
+</html>
